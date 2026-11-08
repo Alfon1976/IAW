@@ -9,17 +9,41 @@ require __DIR__ . '/inc/cabecera.php';
 // ✍️ 2.2 · Una función euros() que reciba un número (float) y devuelva el precio en texto,
 //    con dos decimales, coma decimal y el símbolo del euro: 3.2 → «3,20 €». Pista: number_format.
 
+function euros(float $precio): string {
+    return number_format($precio, 2, ',', '.') . ' €';
+}
+
+
+
 ?>
 <h2>La carta</h2>
 <ul id="carta">
-<?php // ✍️ 2.1 · Un <li> por plato: «nombre — precio» (el precio, con tu euros()). Pista: foreach. ?>
+<?php 
+// ✍️ 2.1 · Un <li> por plato: «nombre — precio» (el precio, con tu euros()). Pista: foreach. 
+if (is_array($platos)) {
+    foreach ($platos as $plato) {
+        $precioActual = (float)$plato['precio'];
+        $total += $precioActual; // Vamos sumando al total sobre la marcha
+        echo "<li>" . htmlspecialchars($plato['nombre']) . " — " . euros($precioActual) . "</li>";
+    }
+}
+?>
 </ul>
 
-<?php // ✍️ 2.3 · Suma los precios de todos los platos. Pista: array_column + array_sum. ?>
-<p id="total">Total de la carta: <?php /* ✍️ el total, con euros() */ ?></p>
+<p id="total">Total de la carta: <?php echo euros($total); ?></p>
+
+
+
 
 <h2>Para vegetarianos</h2>
-<?php // ✍️ 2.4 · Quédate solo con los vegetarianos (array_filter) y pinta otra lista igual que la de arriba. ?>
 <ul id="vegetarianos">
+<?php 
+// ✍️ 2.4 · Quédate solo con los vegetarianos (array_filter) y pinta otra lista igual que la de arriba. 
+$vegetarianos = array_filter($platos, fn($p) => (bool)$p['vegetariano']);
+
+foreach ($vegetarianos as $plato) {
+    echo "<li>" . htmlspecialchars($plato['nombre']) . " — " . euros((float)$plato['precio']) . "</li>";
+}
+?>
 </ul>
 </body></html>
