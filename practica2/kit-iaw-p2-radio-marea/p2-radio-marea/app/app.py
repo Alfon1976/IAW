@@ -12,7 +12,8 @@ app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)   # 👀 se fía de UN
 
 # ✍️ B2 · La llave de las sesiones (UD5, apartado 7.3). Así viene: escrita aquí, corta y conocida por todos.
 #         Que salga del entorno (SECRET_KEY, en servidor/radio.env). Y si no está, que la API no arranque.
-app.secret_key = "cambiame"
+app.secret_key = os.environ["SECRET_KEY"]
+
 
 
 # 👀 Datos de prueba, para el bloque B (todavía sin base de datos). En el C3 dejan de usarse.
@@ -68,7 +69,6 @@ def podcasts():
 
 @app.route("/api/entrar", methods=["POST"])
 def entrar():
-    # 👀 El locutor entra con la contraseña del estudio (LOCUTOR_CLAVE, en radio.env) y se lleva la «pulsera» (UD5, apartado 7).
     datos = request.get_json(silent=True) or {}
     if datos.get("clave") != os.environ.get("LOCUTOR_CLAVE"):
         return jsonify({"error": "Contraseña incorrecta"}), 401
@@ -78,6 +78,19 @@ def entrar():
 
 @app.route("/api/estudio")
 def estudio():
-    # ✍️ B2 · El panel del estudio: solo para quien ha entrado (lleva la pulsera, es decir, «locutor» en la sesión).
-    #         Sin pulsera: {"error": "Primero, POST /api/entrar"} con un 401. Ahora entra cualquiera.
-    return jsonify({"locutor": session.get("locutor"), "siguiente": "Noticias del puerto, a las 13:00"})
+    if "locutor" not in session:
+        return jsonify({"error": "Primero, POST /api/entrar"}), 401
+    return jsonify({
+        "locutor": session["locutor"],
+        "siguiente": "Noticias del puerto, a las 13:00"
+    })
+
+
+# B4: consultar un podcast por su identificador
+@app.route("/api/podcasts/<int:id>", methods=["GET"])
+def podcast_por_id(id):
+    for podcast in leer_podcasts():
+        if podcast["id"] == id:
+            return jsonify(podcast)
+
+    return jsonify({"error": "No existe ese podcast"}), 404
