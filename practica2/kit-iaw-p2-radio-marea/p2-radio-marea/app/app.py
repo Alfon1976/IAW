@@ -80,6 +80,7 @@ def entrar():
 def estudio():
     if "locutor" not in session:
         return jsonify({"error": "Primero, POST /api/entrar"}), 401
+
     return jsonify({
         "locutor": session["locutor"],
         "siguiente": "Noticias del puerto, a las 13:00"
