@@ -1,21 +1,12 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+set -e
 
-if [ -f "$(dirname "$0")/radio.env" ]; then
-    . "$(dirname "$0")/radio.env"
-elif [ -f "/etc/radio/radio.env" ]; then
-    . "/etc/radio/radio.env"
-fi
+. /srv/servidor/radio.env
 
-COPIAS_DIR="/srv/copias"
-mkdir -p "$COPIAS_DIR"
+mkdir -p /copias
+FECHA=$(date +%Y%m%d-%H%M%S)
+FICHERO="/copias/radio-${FECHA}.sql"
 
-FECHA=$(date +"%Y%m%d-%H%M%S")
-FICHERO="$COPIAS_DIR/radio-$FECHA.sql"
+mysqldump -h db -u "$COPIAS_USER" -p"$COPIAS_PASS" --ssl=0 --single-transaction --no-tablespaces radio > "$FICHERO"
 
-mysqldump -h "${DB_HOST:-mariadb}" -u "$COPIAS_USER" -p"$COPIAS_PASS" "${DB_NAME:-radio}" > "$FICHERO"
-
-# Borrar copias con más de 7 días o mantener limpias
-find "$COPIAS_DIR" -type f -name "radio-*.sql" -mmin +10080 -delete 2>/dev/null || true
-
-echo "Copia creada en $FICHERO"
+find /copias -type f -name "radio-*.sql" -mtime +7 -delete

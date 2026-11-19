@@ -22,17 +22,15 @@ function leer_env(string $fichero): array
 //         - en el DSN, también charset=utf8mb4;
 //         - que lance una excepción si algo falla y que cada fila sea un array con los nombres de las columnas.
 //         En este fichero no puede quedar escrita ninguna contraseña.
-
-
-
-function conectar() {
-    $cfg = leer_env('/etc/radio/radio.env'); // o la ruta configurada en tu entorno
-    $dsn = "mysql:host=" . $cfg['DB_HOST'] . ";dbname=" . $cfg['DB_NAME'] . ";charset=utf8mb4";
+function conectar(): PDO {
+    $cfg = leer_env('/etc/radio/radio.env');
+    $dsn = "mysql:host={$cfg['DB_HOST']};dbname={$cfg['DB_NAME']};charset=utf8mb4";
     return new PDO($dsn, $cfg['DB_USER'], $cfg['DB_PASS'], [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
 }
+
 
 
 
